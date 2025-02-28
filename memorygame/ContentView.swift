@@ -17,11 +17,11 @@ struct ContentView: View {
 
                             .tag(0)
 
-                        Themes(emojis: ["🍎", "🍌", "🍉", "🫐", "🥝", "🍊", "🍒", "🍋", "🍎", "🍌", "🍉", "🫐", "🥝", "🍊", "🍒", "🍋"], themeColor: .yellow)
+                        Themes(emojis: ["🍫", "🍰", "🍣", "🍿", "🍟", "🍱", "🍜","🥨","🍫", "🍰", "🍣", "🍿", "🍟", "🍱", "🍜", "🥨"], themeColor: .yellow)
 
                             .tabItem() { 
 
-                                    Label("Fruits", systemImage: "pawprint")
+                                    Label("Foods", systemImage: "birthday.cake.fill")
 
                                 }
 
@@ -31,7 +31,7 @@ struct ContentView: View {
 
                             .tabItem() { 
 
-                                Label("Objects", systemImage: "pawprint")
+                                Label("Objects", systemImage: "shippingbox.fill")
 
                             }
 
@@ -58,6 +58,11 @@ struct Themes: View {
         @State var isFaceUp: [Bool] = Array(repeating: false, count: 16)
 
         @State var themeColor: Color
+    
+        @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    
+        @Environment(\.verticalSizeClass) var verticalSizeClass
+
 
 
         var body: some View {
@@ -68,7 +73,7 @@ struct Themes: View {
 
                                 Text("Memorize!")
 
-                                    .font(.system(size: 40, weight: .bold, design: .default))
+                                    .font(.largeTitle.bold())
 
                                     .foregroundColor(themeColor)
 
@@ -80,8 +85,8 @@ struct Themes: View {
 
                     }
 
-                .padding()
-
+                .padding(.bottom)
+                .padding(.horizontal)
                 .onAppear{
 
                         if firstShuffle {
@@ -112,7 +117,7 @@ struct Themes: View {
                 print("match card")
                 print(matchedCards)
 
-            }
+        }
 
 
         var cardViews: [CardView] {
@@ -134,20 +139,40 @@ struct Themes: View {
         }
 
         var cards: some View {
+            
+            GeometryReader { geometry in
+                
+                
+                
+                let screenWidth = UIScreen.main.bounds.width
+                let screenHeight = UIScreen.main.bounds.height
+                let isLandscape = screenWidth > screenHeight
 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))]) {
+                let isPad = UIDevice.current.userInterfaceIdiom == .pad
+                let cardsPerRow = (isPad && !isLandscape) ? 6 : (isLandscape ? 8 : 4)
+
+
+                let spacing: CGFloat = 10
+                let totalSpacing = spacing * CGFloat(cardsPerRow - 1)
+                let cardWidth = (geometry.size.width - totalSpacing) / CGFloat(cardsPerRow)
+
+
+                
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: cardsPerRow), spacing: spacing) {
 
                         ForEach(0..<cardCount, id: \.self) { index in
 
                                 cardViews[index]
 
                                     .aspectRatio(2/3, contentMode: .fit)
+                                    .frame(width: cardWidth)
 
                         }
 
                 }
-
-                .foregroundColor(themeColor)
+                .frame(width: geometry.size.width)
+            }
+            .foregroundColor(themeColor)
 
         }
 
@@ -184,10 +209,26 @@ struct Themes: View {
                         }
 
                     selectedCard.removeAll()
+                    
+                    if matchedCards.count == cardCount {
+                               DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                   resetGame()
+                               }
+                    }
 
                 }
 
         }
+        
+    func resetGame () {
+        isFaceUp = Array(repeating: false, count: cardCount)
+        selectedCard.removeAll()
+        matchedCards.removeAll()
+        
+        emojis.shuffle()
+        firstShuffle = false
+        
+    }
 
         func addMatchedCards(at index: Int){
             matchedCards.insert(index)
@@ -222,7 +263,7 @@ struct CardView: View {
 
                                 base
 
-                                    .fill(.white)
+                                    .fill(Color(uiColor: .systemBackground))
 
                                     .strokeBorder(lineWidth: 2)
 
