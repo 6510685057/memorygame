@@ -19,7 +19,7 @@ struct ContentView: View {
 
                         Themes(emojis: ["🍫", "🍰", "🍣", "🍿", "🍟", "🍱", "🍜","🥨","🍫", "🍰", "🍣", "🍿", "🍟", "🍱", "🍜", "🥨"], themeColor: .yellow)
 
-                            .tabItem() { 
+                            .tabItem() {
 
                                     Label("Foods", systemImage: "birthday.cake.fill")
 
@@ -29,7 +29,7 @@ struct ContentView: View {
 
                         Themes(emojis:["📚", "🎈", "🧸", "⏰", "🔑", "🛍️", "☎️", "🔫", "📚", "🎈", "🧸", "⏰", "🔑", "🛍️", "☎️", "🔫"], themeColor: .mint)
 
-                            .tabItem() { 
+                            .tabItem() {
 
                                 Label("Objects", systemImage: "shippingbox.fill")
 
@@ -66,40 +66,32 @@ struct Themes: View {
 
 
         var body: some View {
-
-                VStack {
-
-                        ScrollView{
-
-                                Text("Memorize!")
-
-                                    .font(.largeTitle.bold())
-
-                                    .foregroundColor(themeColor)
-
-                                    .padding(.bottom, 10)
-
-                                cards
-
-                            }
-
-                    }
-
-                .padding(.bottom)
-                .padding(.horizontal)
-                .onAppear{
-
-                        if firstShuffle {
-
-                                emojis.shuffle()
-
-                                firstShuffle = false
-
-                            }
-
+            
+            GeometryReader { geometry in
+                
+                VStack(spacing: 0) {
+                    
+                    Text("Memorize!")
+                    .font(.largeTitle.bold())
+                    .foregroundColor(themeColor)
+                    .padding(.top, 10)
+                    
+                cards
+                    
+                    .frame(maxHeight: .infinity)
+            }
+                
+            .padding(.horizontal)
+                
+            .onAppear {
+                
+                if firstShuffle {
+                    emojis.shuffle()
+                    firstShuffle = false
                 }
-
+            }
         }
+    }
 
         func filterSet(firstSet: Set<Int>, secondSet: Set<Int>) -> Set<Int> {
             return firstSet.subtracting(secondSet)
@@ -138,43 +130,37 @@ struct Themes: View {
 
         }
 
-        var cards: some View {
+    var cards: some View {
+        
+        GeometryReader { geometry in
             
-            GeometryReader { geometry in
-                
-                
-                
-                let screenWidth = UIScreen.main.bounds.width
-                let screenHeight = UIScreen.main.bounds.height
-                let isLandscape = screenWidth > screenHeight
+            let screenWidth = UIScreen.main.bounds.width
+            let screenHeight = UIScreen.main.bounds.height
+            let isLandscape = screenWidth > screenHeight
 
-                let isPad = UIDevice.current.userInterfaceIdiom == .pad
-                let cardsPerRow = (isPad && !isLandscape) ? 6 : (isLandscape ? 8 : 4)
+            let isPad = UIDevice.current.userInterfaceIdiom == .pad
+            let cardsPerRow = (isPad && !isLandscape) ? 6 : (isLandscape ? 8 : 4)
 
-
-                let spacing: CGFloat = 10
-                let totalSpacing = spacing * CGFloat(cardsPerRow - 1)
-                let cardWidth = (geometry.size.width - totalSpacing) / CGFloat(cardsPerRow)
-
-
-                
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: cardsPerRow), spacing: spacing) {
-
-                        ForEach(0..<cardCount, id: \.self) { index in
-
-                                cardViews[index]
-
-                                    .aspectRatio(2/3, contentMode: .fit)
-                                    .frame(width: cardWidth)
-
-                        }
-
+            let horizontalSpacing: CGFloat = 10
+            let verticalSpacing: CGFloat = 30
+            
+            let totalSpacing = horizontalSpacing * CGFloat(cardsPerRow - 1)
+            let cardWidth = (geometry.size.width - totalSpacing) / CGFloat(cardsPerRow)
+            
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: horizontalSpacing), count: cardsPerRow),
+                spacing: verticalSpacing
+            ) {
+                ForEach(0..<cardCount, id: \.self) { index in
+                    cardViews[index]
+                        .aspectRatio(2/3, contentMode: .fit)
+                        .frame(width: cardWidth)
                 }
-                .frame(width: geometry.size.width)
             }
-            .foregroundColor(themeColor)
-
+            .frame(minHeight: geometry.size.height)
         }
+        .foregroundColor(themeColor)
+    }
 
         func checkMatchingCards(at index: Int) {
 
@@ -291,4 +277,4 @@ struct CardView: View {
 
         ContentView()
 
-} 
+}
