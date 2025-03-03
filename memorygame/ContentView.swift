@@ -197,7 +197,7 @@ struct Themes: View {
                     selectedCard.removeAll()
                     
                     if matchedCards.count == cardCount {
-                               DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                               DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                                    resetGame()
                                }
                     }
